@@ -284,7 +284,7 @@ class Post(db.Model, BlogHandler):
     created = db.DateTimeProperty(auto_now_add = True)
     last_modified = db.DateTimeProperty(auto_now_add = True)
 
-    def render(self, session_user = False):
+    def render(self, session_user = False, show_comments = False):
         '''
         render blog post
         '''
@@ -301,11 +301,14 @@ class Post(db.Model, BlogHandler):
         else:
             like_id = 0
 
+        # get comments for post
+        comments = Comment.get_comments_for_post(self.key().id())
+
         # get likes count for post
         likes_count = Like.get_likes_count_for_post(self.key().id())
 
         self._render_text = self.content.replace('\n','<br>')
-        return self.render_str("post.html", p = self, like_id = like_id, likes_count = likes_count)
+        return self.render_str("post.html", p = self, like_id = like_id, likes_count = likes_count, show_comments = show_comments, comments = comments)
 
     @classmethod
     def get_posts_key(cls, name = 'default'):
@@ -561,6 +564,148 @@ class UnlikePost(BlogHandler):
         else:
             self.redirect('/login')
 
+class Comment(db.Model, BlogHandler):
+    '''
+    Post entity in data store
+    '''
+
+    post_id = db.StringProperty(required = True)
+    username = db.StringProperty(required = True)
+    comment = db.TextProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+    last_modified = db.DateTimeProperty(auto_now_add = True)
+
+    @classmethod
+    def get_comments_key(cls, name = 'default'):
+        '''
+        define a parent group 'posts' identified by 'default' 
+        useful for attaching data of all posts
+        '''
+        return db.Key.from_path('comments', name)
+
+    @classmethod
+    def get_comments_for_post(cls, post_id):
+        post_id = str(post_id)
+        comments = Comment.all().filter('post_id = ', post_id).ancestor(Comment.get_comments_key())
+        return comments
+
+    @classmethod
+    def get_comment_by_id(cls, comment_id):
+        return Comment.get_by_id(int(comment_id), parent = Comment.get_comments_key())
+
+class NewComment(BlogHandler):
+    '''
+    Handle new posts (submission & redirect)
+    '''
+
+    def get(self, post_id):
+        '''
+        render new post form
+        '''
+        if self.user:
+            post = Post.get_by_id(int(post_id), parent = Post.get_posts_key())
+            self.render("newcomment.html", user = self.user, post = post)
+        else:
+            self.render('login-form.html', user = self.user)
+
+    def post(self, post_id):
+        if self.user:
+            # get request params
+            username = self.user.username
+            comment = self.request.get('comment')
+            post_id = self.request.get('post_id')
+
+            post = Post.get_by_id(int(post_id), parent = Post.get_posts_key())
+
+            # if username, subject and contents are proper, put on db and redirect
+            # else render form with error
+            if username and post_id and comment:
+                c = Comment(parent = Comment.get_comments_key(), username = username, post_id = post_id, comment = comment)
+                c.put()
+                self.redirect('/post/%s' % str(post_id))
+            else:
+                error = "Comment can't be empty!"
+                self.render("newcomment.html", user = self.user, post = post, error = error)
+        else:
+            self.render('login-form.html', user = self.user)
+
+class EditComment(BlogHandler):
+    '''
+    Handle new posts (submission & redirect)
+    '''
+
+    def get(self, comment_id, post_id):
+        '''
+        render new post form
+        '''
+        if self.user:
+            c = Comment.get_comment_by_id(comment_id)
+            p = Post.get_post_by_id(post_id)
+
+            if self.user.username != c.username:
+                error = "not your comment to edit!"
+                self.render("permissiondenied.html", error=error, user = self.user)
+            else:
+                self.render('editcomment.html', user = self.user, comment = c, post = p)
+        else:
+            self.render('login-form.html', user = self.user)
+
+    def post(self, comment_id, post_id):
+        if self.user:
+            # get request params
+            username = self.user.username
+            comment = self.request.get('comment')
+            comment_id = self.request.get('comment_id')
+
+            c = Comment.get_comment_by_id(comment_id)
+            p = Post.get_post_by_id(post_id)
+
+            if self.user.username != c.username:
+                error = "not your comment to edit!"
+                self.render("permissiondenied.html", error=error, user = self.user)
+                return
+
+            if username and post_id and comment:
+                c.comment = str(comment)
+                c.put()
+                self.redirect('/post/%s' % str(post_id))
+            else:
+                error = "Comment can't be empty!"
+                self.render('editcomment.html', user = self.user, comment = c, post = p, error = error)
+
+class DeleteComment(BlogHandler):
+    '''
+    Handle delete comment functinality
+    '''
+
+    def get(self, comment_id, post_id):
+        if self.user:
+            c = Comment.get_comment_by_id(comment_id)
+            p = Post.get_post_by_id(post_id)
+
+            if self.user.username != c.username:
+                error = "not your comment to delete!"
+                self.render("permissiondenied.html", error=error, user = self.user)
+                return
+
+            self.render("deletecomment.html", user = self.user, comment = c, post = p)
+        else:
+            self.redirect('/login')
+
+    def post(self, comment_id, post_id):
+        if self.user:
+            c = Comment.get_comment_by_id(comment_id)
+
+            if c.username == self.user.username:
+                c.delete()
+                self.redirect('/post/%s' % str(post_id))
+                return
+            else:
+                error = "not your comment to delete!"
+                self.render("permissiondenied.html", error=error, user = self.user)
+                return
+        else:
+            self.redirect('/login')
 
 # define handlers
 app = webapp2.WSGIApplication([ ('/', BlogFront),
@@ -573,6 +718,10 @@ app = webapp2.WSGIApplication([ ('/', BlogFront),
                                 ('/deletepost/([0-9]+)', DeletePost),
                                 ('/postdeleted', PostDeleted),
                                 ('/likepost/([0-9]+)', LikePost),
-                                ('/unlikepost/([0-9]+)', UnlikePost)
+                                ('/unlikepost/([0-9]+)', UnlikePost),
+                                ('/newcomment/([0-9]+)', NewComment),
+                                ('/editcomment/([0-9]+)/([0-9]+)', EditComment),
+                                ('/deletecomment/([0-9]+)/([0-9]+)', DeleteComment)
                                ],
                               debug=True)
+    

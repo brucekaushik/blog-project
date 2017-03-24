@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>new comment</h2>
+
+    <form method="post">
+        <h1>Post Title: {{post.subject}}</h1>
+
+      <label>
+        <div>comment:</div>
+        <textarea name="comment"></textarea>
+      </label>
+
+      <div class="error">{{error}}</div>
+
+      <input type="hidden" name="post_id" value="{{post.key().id()}}">
+      <input class="button" type="submit" value="Add Comment">
+      <a class="button" href="/post/{{post.key().id()}}">Cancel</a>
+    </form>
+{% endblock %}

@@ -5,7 +5,7 @@
     </div>
 
     <div class="post-date">
-      posted on {{p.created.strftime("%b %d, %Y")}}, by {{p.username}}
+      
     </div>
   </div>
 
@@ -20,9 +20,26 @@
     {% if like_id %}
       <a class="likepost" href="/unlikepost/{{ p.key().id() }}">Unlike</a> |
     {% else %}
-      <a class="likepost" href="/likepost/{{ p.key().id() }}">Like</a> |
+      <a class="likepost" href="/likepost/{{ p.key().id() }}">Like</a> | 
     {% endif %}
+    <a class="commentpost" href="/newcomment/{{ p.key().id() }}">Comment</a>
     <br>
     Likes for this post: {{likes_count}}
   </div>
+
+  {% if show_comments %}
+    Comments:
+    <hr>
+
+    {% for c in comments %}
+      <div class="comment">
+        <div class="commentmeta">comment by {{c.username}} on {{c.created.strftime("%b %d, %Y")}}</div>
+        <div class="commentbody">{{c.comment}}</div>
+        <div class="commentoptions">
+            <a class="editcomment" href="/editcomment/{{ c.key().id() }}/{{c.post_id}}">edit</a> | 
+            <a class="deletecomment" href="/deletecomment/{{ c.key().id() }}/{{c.post_id}}">delete</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
 </div>

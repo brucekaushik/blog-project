@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Delete Comment</h2>
+
+    <form method="post">
+      <h1>Post Title: {{post.subject}}</h1>
+
+      <h1>Comment:</h1>
+      <p>{{comment.comment}}</p>
+      
+      <input class="button" type="submit" value="Delete Comment">
+      <a class="button" href="/post/{{post.key().id()}}">Cancel</a>
+    </form>
+{% endblock %}
