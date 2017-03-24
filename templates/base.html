@@ -8,12 +8,12 @@
 
 <body>
 	<header>
-		{% if user.username %}
+		{% if user and user.username %}
 			<div id="welcome-msg">Welcome, {{user.username}}</div>
-			<div id="top-menu"> <a href="/newpost">New Post</a> | <a href="logout">Logout</a> </div>
+			<div id="top-menu"> <a href="/newpost">New Post</a> | <a href="/logout">Logout</a> </div>
 		{% else %}
 			<div id="welcome-msg">Welcome, Guest</div>
-			<div id="top-menu"> <a href="/signup">Signup</a> | <a href="login">Login</a> </div>
+			<div id="top-menu"> <a href="/signup">Signup</a> | <a href="/login">Login</a> </div>
 		{% endif %}
 
 		<h1 id="heading">
