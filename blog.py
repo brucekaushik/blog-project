@@ -188,13 +188,13 @@ class Signup(BlogHandler):
             have_error = True
 
         if have_error:
-            self.render('signup-form.html', **params)
+            self.render('signup-form.html', user = self.user, **params)
         else:
             user = self.register(username, password, email)
             user_check = User.check_user_exists(user)
             if user_check:
-                params['error_email'] = "User already exists! Please enter a unique username."
-                self.render('signup-form.html', **params)
+                params['error_username'] = "User already exists! Please enter a unique username."
+                self.render('signup-form.html', user = self.user, **params)
             else:
                 user.put()
                 self.login(user)
@@ -227,7 +227,7 @@ class User(db.Model, BlogHandler):
 
     @classmethod
     def check_user_exists(cls, user):
-        u = User.get_by_name(user.username)
+        u = User.get_user_by_name(user.username)
         if u:
             return u
 
