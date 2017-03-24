@@ -520,14 +520,15 @@ class EditPost(BlogHandler):
             post = Post.get_by_id(
                                 int(post_id),
                                 parent=Post.get_posts_key())
-            # replace subject with new subject
-            post.subject = subject
-
-            # replace content with new content
-            # replace new lines with <br>
-            post.content = content.replace('\n', '<br>')
 
             if username and subject and content:
+                # replace subject with new subject
+                post.subject = subject
+
+                # replace content with new content
+                # replace new lines with <br>
+                post.content = content.replace('\n', '<br>')
+
                 if username == post.username:
                     # put edited post on db
                     post.put()
@@ -544,7 +545,8 @@ class EditPost(BlogHandler):
                 # render form with error
                 error = "subject and content, please!"
                 self.render(
-                            "newpost.html",
+                            "editpost.html",
+                            post = post,
                             user=self.user,
                             subject=subject,
                             content=content,
