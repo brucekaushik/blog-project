@@ -300,6 +300,8 @@ class Post(db.Model, BlogHandler):
         '''
         return db.Key.from_path('posts', name)
 
+    
+
 class NewPost(BlogHandler):
     '''
     Handle new posts (submission & redirect)
@@ -356,12 +358,112 @@ class PostPage(BlogHandler):
         # notice that post will have a render method (see definition) which will also be availble in jinja
         self.render("permalink.html", post = post, user = self.user)
 
+class EditPost(BlogHandler):
+    '''
+    Handle new posts (submission & redirect)
+    '''
+
+    def get(self, post_id):
+        '''
+        render new post form
+        '''
+        if self.user:
+
+            post = Post.get_by_id(int(post_id), parent = Post.get_posts_key())
+            post.content = post.content.replace('<br>','\n')
+
+            if self.user.username != post.username:
+                error = "not your post to edit!"
+                self.render("permissiondenied.html", error=error, user = self.user)
+                return
+
+            self.render("editpost.html", user = self.user, post = post)
+        else:
+            self.redirect('/login')
+
+    def post(self, post_id):
+        if self.user:
+            # get request params
+            username = self.user.username
+            subject = self.request.get('subject')
+            content = self.request.get('content')
+
+            post = Post.get_by_id(int(post_id), parent = Post.get_posts_key())
+            post.subject = subject
+            post.content = content.replace('\n','<br>')
+
+            # if username, subject and contents are proper, put on db and redirect
+            # else render form with error
+            if username and subject and content:
+                if username == post.username:
+                    post.put()
+                    self.redirect('/post/%s' % str(post_id))
+                else:
+                    error = "not your post to edit!"
+                    self.render("permissiondenied.html", error=error, user = self.user)
+            else:
+                error = "subject and content, please!"
+                self.render("newpost.html", user = self.user, subject=subject, content=content, error=error)
+
+class DeletePost(BlogHandler):
+    '''
+    Handle new posts (submission & redirect)
+    '''
+
+    def get(self, post_id):
+        '''
+        render delete post form
+        '''
+        if self.user:
+
+            post = Post.get_by_id(int(post_id), parent = Post.get_posts_key())
+            post.content = post.content.replace('<br>','\n')
+
+            if self.user.username != post.username:
+                error = "not your post to delete!"
+                self.render("permissiondenied.html", error=error, user = self.user)
+                return
+
+            self.render("deletepost.html", user = self.user, post = post)
+        else:
+            self.redirect('/login')
+
+    def post(self, post_id):
+        if self.user:
+            # get request params
+            username = self.user.username
+            subject = self.request.get('subject')
+            content = self.request.get('content')
+
+            post = Post.get_by_id(int(post_id), parent = Post.get_posts_key())
+            postkey = db.Key.from_path('Post', int(post_id), parent = Post.get_posts_key())
+
+            # if username, subject and contents are proper, delete post (post key)
+            # and if current username is same as post's username
+            # else render form with error
+            if username and subject and content:
+                if username == post.username:
+                    db.delete(postkey)
+                    # TODO: post.delete() is also working find the difference
+                    self.redirect('/postdeleted')
+                else:
+                    error = "not your post to delete!"
+                    self.render("permissiondenied.html", error=error, user = self.user)
+
+class PostDeleted(BlogHandler):
+
+    def get(self):
+        self.render("deleted.html", entityname = 'Post', user = self.user)
+
 # define handlers
 app = webapp2.WSGIApplication([ ('/', BlogFront),
                                 ('/signup', Signup),
                                 ('/login', Login),
                                 ('/logout', Logout),
                                 ('/newpost', NewPost),
-                                ('/post/([0-9]+)', PostPage)
+                                ('/post/([0-9]+)', PostPage),
+                                ('/editpost/([0-9]+)', EditPost),
+                                ('/deletepost/([0-9]+)', DeletePost),
+                                ('/postdeleted', PostDeleted)
                                ],
                               debug=True)

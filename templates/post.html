@@ -12,4 +12,9 @@
   <div class="post-content">
     {{p._render_text | safe}}
   </div>
+
+  <div class="post-options">
+    <a class="editpost" href="/editpost/{{ p.key().id() }}">edit</a> |
+    <a class="deletepost" href="/deletepost/{{ p.key().id() }}">delete</a>
+  </div>
 </div>
