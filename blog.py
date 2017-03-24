@@ -150,11 +150,8 @@ class BlogFront(BlogHandler):
         get 10 recent posts from Post entity and render them using front.html
         '''
 
-        #posts = db.GqlQuery("select * from Post order by created desc limit 10")
-        #self.render('front.html', posts = posts)
-
-        self.render('front.html', user = self.user)
-    
+        posts = db.GqlQuery("select * from Post order by created desc limit 10")
+        self.render('front.html', posts = posts, user = self.user)
 
 class Signup(BlogHandler):
     '''
@@ -277,12 +274,94 @@ class Logout(BlogHandler):
         self.logout();
         self.redirect('/')
         
-        
+class Post(db.Model, BlogHandler):
+    '''
+    Post entity in data store
+    '''
+
+    username = db.StringProperty(required = True)
+    subject = db.StringProperty(required = True)
+    content = db.TextProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+    last_modified = db.DateTimeProperty(auto_now_add = True)
+
+    def render(self):
+        '''
+        render blog post
+        '''
+        self._render_text = self.content.replace('\n','<br>')
+        return self.render_str("post.html", p = self)
+
+    @classmethod
+    def get_posts_key(cls, name = 'default'):
+        '''
+        define a parent group 'posts' identified by 'default' 
+        useful for attaching data of all posts
+        '''
+        return db.Key.from_path('posts', name)
+
+class NewPost(BlogHandler):
+    '''
+    Handle new posts (submission & redirect)
+    '''
+
+    def get(self):
+        '''
+        render new post form
+        '''
+        if self.user:
+            self.render("newpost.html", user = self.user)
+        else:
+            self.render('login-form.html', user = self.user)
+
+    def post(self):
+        if self.user:
+            # get request params
+            username = self.user.username
+            subject = self.request.get('subject')
+            content = self.request.get('content')
+
+            # if username, subject and contents are proper, put on db and redirect
+            # else render form with error
+            if username and subject and content:
+                p = Post(parent = Post.get_posts_key(), username = username, subject = subject, content = content)
+                p.put()
+                self.redirect('/post/%s' % str(p.key().id()))
+            else:
+                error = "subject and content, please!"
+                self.render("newpost.html", user = self.user, subject=subject, content=content, error=error)
+
+class PostPage(BlogHandler):
+    '''
+    Handle Post Page (permalink)
+    '''
+
+    def get(self, post_id):
+        '''
+        get post from database and render it using template
+        '''
+
+        # get the post key
+        key = db.Key.from_path('Post', int(post_id), parent = Post.get_posts_key())
+        # get the post from db using key
+        post = db.get(key)
+
+        # show 404 if post is not available
+        if not post:
+            self.error(404)
+            self.write('Error! Post Not Found')
+            return
+
+        # render post using permalink template
+        # notice that post will have a render method (see definition) which will also be availble in jinja
+        self.render("permalink.html", post = post, user = self.user)
 
 # define handlers
 app = webapp2.WSGIApplication([ ('/', BlogFront),
                                 ('/signup', Signup),
                                 ('/login', Login),
-                                ('/logout', Logout)
+                                ('/logout', Logout),
+                                ('/newpost', NewPost),
+                                ('/post/([0-9]+)', PostPage)
                                ],
                               debug=True)
