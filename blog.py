@@ -289,17 +289,20 @@ class Post(db.Model, BlogHandler):
         render blog post
         '''
 
-        # get likes
-        likes = Like.get_likes(self.key().id(), session_user.username)
+        # get likes by post id and username
+        if session_user:
+            likes = Like.get_postlikes_by_username(self.key().id(), session_user.username)
        
-        # get latest like id (in case post got liked by the same user multiple times)
-        if likes.count():
-            like_id = likes[0].key().id()
+            # get latest like id (in case post got liked by the same user multiple times)
+            if likes.count():
+                like_id = likes[0].key().id()
+            else:
+                like_id = 0
         else:
             like_id = 0
 
-        # get likes count
-        likes_count = Like.get_likes_count(self.key().id())
+        # get likes count for post
+        likes_count = Like.get_likes_count_for_post(self.key().id())
 
         self._render_text = self.content.replace('\n','<br>')
         return self.render_str("post.html", p = self, like_id = like_id, likes_count = likes_count)
@@ -312,7 +315,9 @@ class Post(db.Model, BlogHandler):
         '''
         return db.Key.from_path('posts', name)
 
-    
+    @classmethod
+    def get_post_by_id(cls, post_id):
+        return Post.get_by_id(int(post_id), parent = Post.get_posts_key())
 
 class NewPost(BlogHandler):
     '''
@@ -355,20 +360,20 @@ class PostPage(BlogHandler):
         get post from database and render it using template
         '''
 
-        # get the post key
-        key = db.Key.from_path('Post', int(post_id), parent = Post.get_posts_key())
-        # get the post from db using key
-        post = db.get(key)
+        p = Post.get_post_by_id(post_id)
 
         # show 404 if post is not available
-        if not post:
+        if not p:
             self.error(404)
             self.write('Error! Post Not Found')
             return
 
+        if not self.user:
+            self.user = False
+
         # render post using permalink template
         # notice that post will have a render method (see definition) which will also be availble in jinja
-        self.render("permalink.html", post = post, user = self.user)
+        self.render("permalink.html", post = p, user = self.user)
 
 class EditPost(BlogHandler):
     '''
@@ -494,14 +499,14 @@ class Like(db.Model, BlogHandler):
         return Like.get_by_id(int(like_id), parent = Like.get_likes_key())
 
     @classmethod
-    def get_likes(cls, post_id, username):
+    def get_postlikes_by_username(cls, post_id, username):
         post_id = str(post_id)
         username = str(username)
         likes = Like.all().filter('username = ', username).filter('post_id = ', post_id).ancestor(Like.get_likes_key())
         return likes
 
     @classmethod
-    def get_likes_count(cls, post_id):
+    def get_likes_count_for_post(cls, post_id):
         post_id = str(post_id)
         likes = Like.all().filter('post_id = ', post_id).ancestor(Like.get_likes_key())
         return likes.count()
@@ -527,6 +532,8 @@ class LikePost(BlogHandler):
                 self.redirect('/post/%s' % str(post_id))
             else:
                 self.redirect('/post/%s' % str(post_id))
+        else:
+            self.redirect('/login')
 
 class UnlikePost(BlogHandler):
     '''
@@ -538,7 +545,7 @@ class UnlikePost(BlogHandler):
             # get request params
             username = self.user.username
 
-            likes = Like.get_likes(post_id, username)
+            likes = Like.get_postlikes_by_username(post_id, username)
 
             if not likes.count():
                 self.redirect('/post/%s' % str(post_id))
@@ -551,6 +558,9 @@ class UnlikePost(BlogHandler):
 
             self.redirect('/post/%s' % str(post_id))
             return
+        else:
+            self.redirect('/login')
+
 
 # define handlers
 app = webapp2.WSGIApplication([ ('/', BlogFront),
