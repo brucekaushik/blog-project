@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link type="text/css" rel="stylesheet" href="/static/main.css" />
+
+  <title>Basic Blog</title>
+</head>
+
+<body>
+	<header>
+		{% if user.username %}
+			<div id="welcome-msg">Welcome, {{user.username}}</div>
+			<div id="top-menu"> <a href="/newpost">New Post</a> | <a href="logout">Logout</a> </div>
+		{% else %}
+			<div id="welcome-msg">Welcome, Guest</div>
+			<div id="top-menu"> <a href="/signup">Signup</a> | <a href="login">Login</a> </div>
+		{% endif %}
+
+		<h1 id="heading">
+			<a href="/" class="main-title">Basic Blog</a>
+		</h1>
+	</header>
+  <div id="content">
+  {% block content %}
+  {% endblock %}
+  </div>
+</body>
+
+</html>
+
