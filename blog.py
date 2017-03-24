@@ -149,7 +149,6 @@ class BlogFront(BlogHandler):
         '''
         get 10 recent posts from Post entity and render them using front.html
         '''
-
         posts = db.GqlQuery("select * from Post order by created desc limit 10")
         self.render('front.html', posts = posts, user = self.user)
 
@@ -285,12 +284,25 @@ class Post(db.Model, BlogHandler):
     created = db.DateTimeProperty(auto_now_add = True)
     last_modified = db.DateTimeProperty(auto_now_add = True)
 
-    def render(self):
+    def render(self, session_user = False):
         '''
         render blog post
         '''
+
+        # get likes
+        likes = Like.get_likes(self.key().id(), session_user.username)
+       
+        # get latest like id (in case post got liked by the same user multiple times)
+        if likes.count():
+            like_id = likes[0].key().id()
+        else:
+            like_id = 0
+
+        # get likes count
+        likes_count = Like.get_likes_count(self.key().id())
+
         self._render_text = self.content.replace('\n','<br>')
-        return self.render_str("post.html", p = self)
+        return self.render_str("post.html", p = self, like_id = like_id, likes_count = likes_count)
 
     @classmethod
     def get_posts_key(cls, name = 'default'):
@@ -455,6 +467,91 @@ class PostDeleted(BlogHandler):
     def get(self):
         self.render("deleted.html", entityname = 'Post', user = self.user)
 
+
+class Like(db.Model, BlogHandler):
+    '''
+    Post entity in data store
+    '''
+
+    post_id = db.StringProperty(required = True)
+    username = db.StringProperty(required = True)
+    like = db.BooleanProperty()
+
+    @classmethod
+    def get_likes_key(cls, name = 'default'):
+        '''
+        define a parent group 'posts' identified by 'default' 
+        useful for attaching data of all posts
+        '''
+        return db.Key.from_path('likes', name)
+
+    @classmethod
+    def get_like_status(cls, post_id, username = False):
+        return Like.get_by_id(int(post_id), parent = Like.get_likes_key())
+
+    @classmethod
+    def get_like_by_id(cls, like_id):
+        return Like.get_by_id(int(like_id), parent = Like.get_likes_key())
+
+    @classmethod
+    def get_likes(cls, post_id, username):
+        post_id = str(post_id)
+        username = str(username)
+        likes = Like.all().filter('username = ', username).filter('post_id = ', post_id).ancestor(Like.get_likes_key())
+        return likes
+
+    @classmethod
+    def get_likes_count(cls, post_id):
+        post_id = str(post_id)
+        likes = Like.all().filter('post_id = ', post_id).ancestor(Like.get_likes_key())
+        return likes.count()
+
+class LikePost(BlogHandler):
+    '''
+    Handle new posts (submission & redirect)
+    '''
+
+    def get(self, post_id):
+        if self.user:
+            # get request params
+            username = self.user.username
+
+            #get post
+            post = Post.get_by_id(int(post_id), parent = Post.get_posts_key())
+
+            # if username, subject and contents are proper, put on db and redirect
+            # else render form with error
+            if username != post.username:
+                like = Like(parent = Like.get_likes_key(), post_id = post_id, username = username, like = True)
+                like.put()
+                self.redirect('/post/%s' % str(post_id))
+            else:
+                self.redirect('/post/%s' % str(post_id))
+
+class UnlikePost(BlogHandler):
+    '''
+    Handle new posts (submission & redirect)
+    '''
+
+    def get(self, post_id):
+        if self.user:
+            # get request params
+            username = self.user.username
+
+            likes = Like.get_likes(post_id, username)
+
+            if not likes.count():
+                self.redirect('/post/%s' % str(post_id))
+                return
+
+            like = likes[0]
+
+            if like.username == username:
+                like.delete()
+
+            self.redirect('/post/%s' % str(post_id))
+            return
+
 # define handlers
 app = webapp2.WSGIApplication([ ('/', BlogFront),
                                 ('/signup', Signup),
@@ -464,6 +561,8 @@ app = webapp2.WSGIApplication([ ('/', BlogFront),
                                 ('/post/([0-9]+)', PostPage),
                                 ('/editpost/([0-9]+)', EditPost),
                                 ('/deletepost/([0-9]+)', DeletePost),
-                                ('/postdeleted', PostDeleted)
+                                ('/postdeleted', PostDeleted),
+                                ('/likepost/([0-9]+)', LikePost),
+                                ('/unlikepost/([0-9]+)', UnlikePost)
                                ],
                               debug=True)

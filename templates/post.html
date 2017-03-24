@@ -5,7 +5,7 @@
     </div>
 
     <div class="post-date">
-      {{p.created.strftime("%b %d, %Y")}}
+      posted on {{p.created.strftime("%b %d, %Y")}}, by {{p.username}}
     </div>
   </div>
 
@@ -16,5 +16,13 @@
   <div class="post-options">
     <a class="editpost" href="/editpost/{{ p.key().id() }}">edit</a> |
     <a class="deletepost" href="/deletepost/{{ p.key().id() }}">delete</a>
+    <br>
+    {% if like_id %}
+      <a class="likepost" href="/unlikepost/{{ p.key().id() }}">Unlike</a> |
+    {% else %}
+      <a class="likepost" href="/likepost/{{ p.key().id() }}">Like</a> |
+    {% endif %}
+    <br>
+    Likes for this post: {{likes_count}}
   </div>
 </div>
