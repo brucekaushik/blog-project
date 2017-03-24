@@ -16,6 +16,7 @@
 
       <div class="error">{{error}}</div>
 
-      <input type="submit" value="Edit Post">
+      <input class="button" type="submit" value="Edit Post">
+      <a class="button" href="/post/{{post.key().id()}}">Cancel</a>
     </form>
 {% endblock %}
