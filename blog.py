@@ -546,7 +546,7 @@ class EditPost(BlogHandler):
                 error = "subject and content, please!"
                 self.render(
                             "editpost.html",
-                            post = post,
+                            post=post,
                             user=self.user,
                             subject=subject,
                             content=content,
