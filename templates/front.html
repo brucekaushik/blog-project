@@ -3,7 +3,7 @@
 {% block content %}
 
   {% for p in posts %}
-    {{ p.render(user) | safe }}
+    {{ post_helper.render_post(p.key().id(), user) | safe }}
     <br><br>
   {% endfor %}
 

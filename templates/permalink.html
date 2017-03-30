@@ -1,5 +1,5 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {{post.render(user, show_comments = True) | safe}}
+  {{ post_helper.render_post(post.key().id(), user, show_comments=True) | safe }}
 {% endblock %}
