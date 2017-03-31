@@ -3,7 +3,9 @@ from models import Comment
 from helpers import CommentHelper
 from helpers import PostHelper
 
+
 class DeleteCommentHandler(BlogHandler):
+
     '''
     Handle delete comment
     '''
@@ -26,12 +28,17 @@ class DeleteCommentHandler(BlogHandler):
         if self.user.username != comment.username:
             error = "not your comment to edit!"
             self.render(
-                "permissiondenied.html", error=error, user=self.user)
+                "permissiondenied.html",
+                error=error,
+                user=self.user)
             return
         else:
             # render delete comment form
             self.render(
-                "deletecomment.html", user=self.user, comment=comment, post=post)
+                "deletecomment.html",
+                user=self.user,
+                comment=comment,
+                post=post)
             return
 
     def post(self, comment_id, post_id):
@@ -52,7 +59,7 @@ class DeleteCommentHandler(BlogHandler):
             self.render(
                 "permissiondenied.html", error=error, user=self.user)
             return
-        
+
         if comment.username == self.user.username:
             # delete comment from db
             comment.delete()

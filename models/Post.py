@@ -3,7 +3,9 @@ from handlers import BaseHandler
 from helpers import LikeHelper
 from helpers import CommentHelper
 
+
 class Post(db.Model):
+
     '''
     Post entity
     '''
@@ -13,7 +15,3 @@ class Post(db.Model):
     content = db.TextProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
     last_modified = db.DateTimeProperty(auto_now_add=True)
-
-        
-
-        

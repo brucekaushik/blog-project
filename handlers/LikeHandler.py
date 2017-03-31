@@ -4,7 +4,9 @@ from handlers import BlogHandler
 from helpers import LikeHelper
 from helpers import PostHelper
 
+
 class LikeHandler(BlogHandler):
+
     '''
     Handle like requests
     '''
@@ -22,7 +24,7 @@ class LikeHandler(BlogHandler):
             return
 
         username = self.user.username
-            
+
         # get user's likes for post (can be more than 1, bugs??)
         likes_of_user = LikeHelper.get_postlikes_by_username(post_id, username)
 

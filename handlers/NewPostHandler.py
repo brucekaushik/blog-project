@@ -2,7 +2,9 @@ from BlogHandler import BlogHandler
 from models import Post
 from helpers import PostHelper
 
+
 class NewPostHandler(BlogHandler):
+
     '''
     Handle new posts
     '''
@@ -44,4 +46,3 @@ class NewPostHandler(BlogHandler):
                 subject=subject,
                 content=content,
                 error=error)
-                

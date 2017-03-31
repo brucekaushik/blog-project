@@ -1,6 +1,7 @@
 from handlers import BlogHandler
 from helpers import PostHelper
 
+
 class ViewPostHandler(BlogHandler):
     '''
     Handle Post Page (permalink)
@@ -25,4 +26,7 @@ class ViewPostHandler(BlogHandler):
         # render post using permalink template
         # note: post will have a render method (see definition)
         # notice: render method will also be availble in jinja
-        self.render("permalink.html", post=post, user=self.user, post_helper=PostHelper)
+        self.render("permalink.html",
+                    post=post,
+                    user=self.user,
+                    post_helper=PostHelper)

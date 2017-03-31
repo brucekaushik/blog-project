@@ -1,5 +1,6 @@
 from handlers import BlogHandler
 
+
 class PostDeletedHandler(BlogHandler):
     '''
     post deleted form (intermediate step)
@@ -9,4 +10,6 @@ class PostDeletedHandler(BlogHandler):
         '''
         render post deleted form (for notification purpose)
         '''
-        self.render("deleted.html", entityname='Post', user=self.user)
+        self.render("deleted.html",
+                    entityname='Post',
+                    user=self.user)

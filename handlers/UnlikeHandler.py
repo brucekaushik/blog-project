@@ -4,6 +4,7 @@ from handlers import BlogHandler
 from helpers import LikeHelper
 from helpers import PostHelper
 
+
 class UnlikeHandler(BlogHandler):
     '''
     Handle unlike requests
@@ -39,4 +40,3 @@ class UnlikeHandler(BlogHandler):
 
         self.redirect('/post/%s' % str(post_id))
         return
-            

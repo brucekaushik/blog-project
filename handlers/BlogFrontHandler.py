@@ -2,7 +2,9 @@ from BlogHandler import BlogHandler
 from helpers import PostHelper
 from google.appengine.ext import db
 
+
 class BlogFrontHandler(BlogHandler):
+
     '''
     blog front page, with recent 10 posts
     '''
@@ -18,4 +20,5 @@ class BlogFrontHandler(BlogHandler):
             "select * from Post order by created desc limit 10")
 
         # render front page
-        self.render('front.html', posts=posts, user=self.user, post_helper=PostHelper)
+        self.render(
+            'front.html', posts=posts, user=self.user, post_helper=PostHelper)

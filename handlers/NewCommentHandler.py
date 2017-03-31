@@ -4,7 +4,9 @@ from handlers import BlogHandler
 from helpers import PostHelper
 from helpers import CommentHelper
 
+
 class NewCommentHandler(BlogHandler):
+
     '''
     Handle new comments
     '''

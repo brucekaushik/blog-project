@@ -1,4 +1,4 @@
-# how do i import webapp2 here? 
+# how do i import webapp2 here?
 # should'nt it be available already??
 
 import os
@@ -11,7 +11,9 @@ template_dir = os.path.join(os.path.dirname(__file__), "../templates")
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(template_dir), autoescape=True)
 
+
 class BaseHandler(webapp2.RequestHandler):
+
     '''
     inherit from this handler to access commonly used methods
     '''

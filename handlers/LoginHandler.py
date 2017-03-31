@@ -2,7 +2,9 @@ from handlers import BlogHandler
 from helpers import BlogHelper, UserHelper
 from models import User
 
+
 class LoginHandler(BlogHandler):
+
     '''
     handle logins
     '''

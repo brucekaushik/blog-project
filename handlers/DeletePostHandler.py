@@ -3,7 +3,9 @@ from models import Post
 from helpers import PostHelper
 from google.appengine.ext import db
 
+
 class DeletePostHandler(BlogHandler):
+
     '''
     Handle post deletions
     '''
@@ -36,7 +38,6 @@ class DeletePostHandler(BlogHandler):
             # render delete post form
             self.render("deletepost.html", user=self.user, post=post)
             return
-            
 
     def post(self, post_id):
 
@@ -66,7 +67,7 @@ class DeletePostHandler(BlogHandler):
                 db.delete(postkey)
                 # TODO: post.delete() is also working find the difference
                 self.redirect('/postdeleted')
-                # self.redirect('/') 
+                # self.redirect('/')
                 # TODO: clarify, why is this showing post on home page?
                 return
             else:

@@ -8,10 +8,11 @@ from models import User
 
 current_path = os.getcwd()
 file_path = current_path + '/secret.txt'
-SECRET = open(file_path,'r').read()
+SECRET = open(file_path, 'r').read()
 
 
 class BlogHandler(BaseHandler):
+
     '''
     base handler for blog,
     methods specific to blog functionality are defined here
@@ -73,4 +74,3 @@ class BlogHandler(BaseHandler):
                     username=username,
                     password_hash=password_hash,
                     email=email)
-

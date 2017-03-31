@@ -24,27 +24,27 @@ import re
 from google.appengine.ext import db
 
 from handlers import BlogHandler,\
-                      BlogFrontHandler,\
-                      SignupHandler,\
-                      LoginHandler,\
-                      LogoutHandler,\
-                      NewPostHandler,\
-                      ViewPostHandler,\
-                      EditPostHandler,\
-                      DeletePostHandler,\
-                      PostDeletedHandler,\
-                      LikeHandler,\
-                      UnlikeHandler,\
-                      NewCommentHandler,\
-                      EditCommentHandler,\
-                      DeleteCommentHandler
+    BlogFrontHandler,\
+    SignupHandler,\
+    LoginHandler,\
+    LogoutHandler,\
+    NewPostHandler,\
+    ViewPostHandler,\
+    EditPostHandler,\
+    DeletePostHandler,\
+    PostDeletedHandler,\
+    LikeHandler,\
+    UnlikeHandler,\
+    NewCommentHandler,\
+    EditCommentHandler,\
+    DeleteCommentHandler
 from helpers import BlogHelper,\
-                    LikeHelper,\
-                    PostHelper,\
-                    CommentHelper
+    LikeHelper,\
+    PostHelper,\
+    CommentHelper
 from models import Post,\
-                    Like,\
-                    Comment
+    Like,\
+    Comment
 
 
 # define handlers

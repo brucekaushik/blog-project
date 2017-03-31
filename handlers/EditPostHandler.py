@@ -2,7 +2,9 @@ from handlers import BlogHandler
 from models import Post
 from helpers import PostHelper
 
+
 class EditPostHandler(BlogHandler):
+
     '''
     Handle edit posts
     '''

@@ -3,6 +3,7 @@ from helpers import BlogHelper
 from helpers import UserHelper
 from models import User
 
+
 class SignupHandler(BlogHandler):
     '''
     handle signups here

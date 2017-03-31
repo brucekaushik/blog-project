@@ -1,9 +1,11 @@
 from handlers import BlogHandler
-from models  import Comment
+from models import Comment
 from helpers import CommentHelper
 from helpers import PostHelper
 
+
 class EditCommentHandler(BlogHandler):
+
     '''
     Handle edit comments
     '''
