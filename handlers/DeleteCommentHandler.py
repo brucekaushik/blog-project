@@ -12,41 +12,49 @@ class DeleteCommentHandler(BlogHandler):
         '''
         render delete comment form
         '''
-        if self.user:
-            # get comment by id
-            c = CommentHelper.get_comment_by_id(comment_id)
+        post = PostHelper.get_post_by_id(post_id)
+        comment = CommentHelper.get_comment_by_id(comment_id)
 
-            # get post by id
-            p = PostHelper.get_post_by_id(post_id)
+        if not post and comment:
+            self.redirect('/')
+            return
 
-            if self.user.username != c.username:
-                # render permission denied form
-                error = "not your comment to delete!"
-                self.render(
-                    "permissiondenied.html", error=error, user=self.user)
-                return
+        if not self.user:
+            self.redirect('/login')
+            return
 
+        if self.user.username != comment.username:
+            error = "not your comment to edit!"
+            self.render(
+                "permissiondenied.html", error=error, user=self.user)
+            return
+        else:
             # render delete comment form
             self.render(
-                "deletecomment.html", user=self.user, comment=c, post=p)
-        else:
-            self.redirect('/login')
+                "deletecomment.html", user=self.user, comment=comment, post=post)
+            return
 
     def post(self, comment_id, post_id):
-        if self.user:
-            # get comment by id
-            c = CommentHelper.get_comment_by_id(comment_id)
 
-            if c.username == self.user.username:
-                # delete comment from db
-                c.delete()
-                self.redirect('/post/%s' % str(post_id))
-                return
-            else:
-                # render permission denied form
-                error = "not your comment to delete!"
-                self.render(
-                    "permissiondenied.html", error=error, user=self.user)
-                return
-        else:
+        post = PostHelper.get_post_by_id(post_id)
+        comment = CommentHelper.get_comment_by_id(comment_id)
+
+        if not post and comment:
+            self.redirect('/')
+            return
+
+        if not self.user:
             self.redirect('/login')
+            return
+
+        if self.user.username != comment.username:
+            error = "not your comment to edit!"
+            self.render(
+                "permissiondenied.html", error=error, user=self.user)
+            return
+        
+        if comment.username == self.user.username:
+            # delete comment from db
+            comment.delete()
+            self.redirect('/post/%s' % str(post_id))
+            return
