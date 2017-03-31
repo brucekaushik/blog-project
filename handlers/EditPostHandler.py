@@ -13,6 +13,7 @@ class EditPostHandler(BlogHandler):
         '''
         if not self.user:
             self.redirect('/login')
+            return
 
         # get post by id
         post = PostHelper.get_post_by_id(int(post_id))
