@@ -15,6 +15,10 @@ class LoginHandler(BlogHandler):
         username = self.request.get('username')
         password = self.request.get('password')
 
+        # build params dictionary to pass to form
+        params = dict(username=username,
+                      password=password)
+
         # validate
         # render form with error if validation fails
         if not BlogHelper.validate_username(username):
@@ -28,5 +32,9 @@ class LoginHandler(BlogHandler):
         else:
             # log the user in
             user = UserHelper.login(username, password)
-            self.login(user)
-            self.redirect('/')
+            if user:
+                self.login(user)
+                self.redirect('/')
+            else:
+                params['error_login_fail'] = "Invalid username or password!"
+                self.render('login-form.html', **params)
